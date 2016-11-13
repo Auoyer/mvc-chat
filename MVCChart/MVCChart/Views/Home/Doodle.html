@@ -1,0 +1,160 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta name="renderer" content="webkit" charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <title></title>
+    <link rel="stylesheet" href="CSS/min/bootstrap.min.css" />
+    <link rel="stylesheet" href="CSS/nor/colpick.css" type="text/css" />
+    <style type="text/css">
+        html, body, canvas, div, ul, li, h5, p {
+            margin: 0;
+            padding: 0;
+            -moz-user-select: none;
+            -webkit-user-select: none;
+        }
+
+        img {
+            border: 1px #ccc solid;
+        }
+
+        ul, li {
+            list-style: none;
+        }
+
+        .wrap {
+            overflow: hidden;
+        }
+
+        .fl {
+            float: left;
+            display: inline;
+        }
+
+        #canvas {
+            margin-right: 10px;
+            border-right: 1px #ccc solid;
+            cursor: crosshair;
+        }
+
+        #canvas-color ul {
+            overflow: hidden;
+        }
+
+            #canvas-color ul li {
+                float: left;
+                display: inherit;
+                width: 13px;
+                height: 13px;
+                border: 3px #fff solid;
+                margin: 8px;
+                cursor: pointer;
+            }
+
+                #canvas-color ul li.js-border-color {
+                    border-color: #000;
+                }
+
+        #canvas-brush span {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            margin-left: 10px;
+            background: url(img/brush.png);
+            cursor: pointer;
+        }
+
+            #canvas-brush span.small-brush {
+                background-position: -6px -6px;
+            }
+
+            #canvas-brush span.middle-brush {
+                background-position: -31px -6px;
+            }
+
+            #canvas-brush span.big-brush {
+                background-position: -56px -6px;
+            }
+
+            #canvas-brush span.js-bg-color {
+                background-color: #aaa;
+            }
+
+        #canvas-control span {
+            display: inline-block;
+            width: 20px;
+            height: 15px;
+            margin-left: 10px;
+            background: url(img/sketchpad_icons.png);
+            cursor: pointer;
+        }
+
+            #canvas-control span.return-control {
+                background-position: -2px -148px;
+            }
+
+            #canvas-control span.next-control {
+                background-position: right -168px;
+            }
+
+            #canvas-control span.empty-control {
+                background-position: -2px -188px;
+            }
+
+            #canvas-control span.js-return-control {
+                background-position: -2px -209px;
+            }
+
+            #canvas-control span.js-next-control {
+                background-position: right -230px;
+            }
+
+            #canvas-control span.js-empty-control {
+                background-position: -2px -251px;
+            }
+
+        #imgDiv {
+            text-align: center;
+        }
+    </style>
+    <script type="text/javascript" src="JS/min/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="JS/min/colpick.js"></script>
+</head>
+<body>
+
+    <div class="wrap">
+        <canvas id="canvas" class="fl" width="600" height="400"></canvas>
+
+        <div class="fl">
+            <div style="margin-top:10px;">
+                <h5>
+                    笔色
+                </h5>
+                <div id="div_color" style="width: 20px; height: 20px; background-color: orange;cursor:pointer;margin-left:10px;margin-bottom:5px;margin-top:5px;"></div>
+                <div id="picker" style="position: absolute;left:395px;top:20px; display:none;"></div>
+            </div>
+            <div id="canvas-brush">
+                <h5>
+                    笔触
+                </h5>
+                <span class="small-brush"></span>
+                <span class="middle-brush"></span>
+                <span class="big-brush"></span>
+            </div>
+            <div id="canvas-control">
+                <h5>
+                    操作
+                </h5>
+                <span title="上一步" class="return-control"></span>
+                <span title="下一步" class="next-control"></span>
+                <span title="清除" class="empty-control"></span>
+            </div>
+            <button id="canvas-drawImage" class='btn btn-default' style="width: 120px; color: orange;margin-top:20px;">
+                发布涂鸦
+            </button>
+        </div>
+    </div>
+    <div id="imgDiv"></div>
+    <script type="text/javascript" src="JS/min/doodle.js"></script>
+</body>
+</html>
