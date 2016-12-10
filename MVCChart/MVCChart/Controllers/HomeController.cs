@@ -23,7 +23,20 @@ namespace MVCChart.Controllers
 
         public ActionResult Doodle()
         {
+            string a = ((LeaveType)1).ToString();
             return View();
         }
+
+        public ActionResult Pics()
+        {
+            return View();
+        }
+    }
+
+    public enum LeaveType
+    {
+        事假 = 0,
+        病假 = 1,
+        婚嫁 = 2
     }
 }

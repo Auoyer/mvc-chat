@@ -64,6 +64,123 @@
             position: absolute;
             background-color: lightblue;
         }
+
+         /*创建组弹窗样式*/
+        .fl {
+            float: left;
+        }
+        .fr {
+            float: right;
+        }
+        .choose {
+            padding: 8px 43px;
+            position: relative;
+        }
+
+            .choose .hint.erro, .choose .help-block {
+                top: 30px;
+                left: 0;
+                text-align: left;
+                padding: 5px 10px;
+            }
+
+            .choose h2 {
+                height: 20px;
+                font-size: 16px;
+                font-weight: normal;
+                line-height: 20px;
+                color: #333;
+                padding: 12px 8px;
+            }
+
+            .choose .name-list {
+                position: relative;
+                overflow: hidden;
+            }
+
+        .name-list h3 {
+            font-weight: normal;
+            font-size: 14px;
+            line-height: 20px;
+            padding: 20px 0 15px;
+        }
+
+        .name-list .name-list-l, .name-list .name-list-r {
+            width: 183px;
+            text-align: left;
+            border: 1px solid #d8d8d8;
+            background: #fff;
+        }
+
+        .name-list-l p, .name-list-r p {
+            height: 29px;
+            font-size: 14px;
+            line-height: 29px;
+            text-align: center;
+            color: #6b6b6b;
+            border-bottom: 1px solid #d8d8d8;
+            background-color: #f6f6f6;
+        }
+
+        .name-list ul {
+            height: 160px;
+            overflow: auto;
+            margin: 6px 0;
+        }
+
+            .name-list ul li {
+                height: 25px;
+                padding: 0 20px;
+                font-size: 12px;
+                line-height: 25px;
+                color: #666;
+                margin-bottom: 3px;
+                cursor: pointer;
+            }
+
+                .name-list ul li.active {
+                    color: #333;
+                    background-color: #eeeeee;
+                }
+
+        .name-list-r {
+            position: relative;
+        }
+
+            .name-list-r .order {
+                position: absolute;
+                top: 2px;
+                right: 5px;
+            }
+
+            .name-list-r .Object-list {
+                height: 248px;
+                overflow: auto;
+            }
+
+            .name-list-r span {
+                display: block;
+                padding: 5px 10px;
+            }
+
+        .name-btn {
+            position: absolute;
+            top: 35px;
+            left: 208px;
+            width: 86px;
+        }
+
+            .name-btn span {
+                display: block;
+                cursor: pointer;
+                height: 27px;
+                line-height: 27px;
+                text-align: center;
+                color: #ed9334;
+                border: 1px solid #ed9334;
+                border-radius: 2px;
+                margin-bottom: 10px;
+            }
     </style>
     <script src="~/Scripts/jquery.cookie.js"></script>
     <script>
@@ -376,6 +493,7 @@
             <span class="input-group-addon" style="color:orange;">你的昵称</span>
             <input id="inp_nickname" type="text" maxlength="10">
             <span id="btn_getnick" style="background-color: orange;"><a href="#">重置</a></span>
+
             <input id="inp_userid" type="hidden" value="" />
             <input id="inp_userconn" type="hidden" value="" />
             <input id="to_userconn" type="hidden" value="" />
@@ -404,7 +522,8 @@
                 <a id="a_record" style="margin-right:10px;" title="录音">
                     <img height="20" width="20" src="http://www.blue-zero.com/Chat/IMG/record.png">
                 </a>
-                <input type="button" id="sendmessage" value="Send" style="height:25px;" />
+                <input type="button" id="sendmessage" value="发送" style="height:25px;" />
+                <input type="button" value="建组" style="height:25px;" onclick="showcreatgroup()"/>
             </div>
         </div>
         <div id="OnlineUsers">
@@ -413,9 +532,43 @@
     </div>
     <div id="contentmsg" style ="position: absolute; width: 500px; height: 500px;margin:10px 0 0 500px;">
         <div class="container" style="top:0px;left:0px;" data-connid=''>
+            <div style="height:25px;background-color:blue;color:red;">
+            公共聊天窗口
+            <input type="button" value="清除" style="float:right;" onclick="ChearAllMsg('')"/>
+            </div>
             <ul class="discussion" data-connid=''></ul>
         </div>
     </div>
+
+<div class="popup" id="popEditGroup" style="display:none;">
+        <div class="choose">
+            <div class="name-list name-list-1 choose-list">
+                <div class="name-list-l name-list-l-1 choose-list-l fl">
+                    <p>可选组员</p>
+                    @*<div class="search">
+                        <input type="text" maxlength="30"><i onclick="searchLU()"></i>
+                    </div>*@
+                    <ul id="addUnSelClass">
+                        <li class="tableEllipsis" value="1" title="aa">aa</li>
+                        <li class="tableEllipsis" value="2" title="bb">bb</li>
+                    </ul>
+                </div>
+                <div class="name-btn">
+                    <span class="hi btn-right">></span>
+                    <span class="hi btn-left"><</span>
+                    <span class="hi btn-right2">»</span>
+                    <span class="hi btn-left2">«</span>
+                </div>
+                <div class="name-list-r name-list-r-1 choose-list-r fr">
+                    <p>已选组员</p>
+                    <span class="help-block" id="TeachSelect" style="display:none"><b></b>Please choose a class.</span>
+                    <ul id="addSelClass"></ul>
+                </div>
+                <div class="clear"></div>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
 
@@ -447,46 +600,50 @@
     $(function () {
         var chat = $.connection.chatHub;
         // 添加消息
-        chat.client.addNewMessageToPage = function (name, message) {
+        chat.client.addNewMessageToPage = function (name, message, sendtime) {
             if (name == $.cookie("user_nickname")) {
                 $('.discussion').append('<li class=\"rightmsg\"><strong>' + htmlEncode(name)
-    + '</strong>: ' + (new Date()).format("yyyy-MM-dd hh:mm:ss") + ' ▼<div class=\"rightcon\">' + chg_emoji(htmlEncode(message)) + '</div></li>');
+    + '</strong>: ' + sendtime + ' ▼<div class=\"rightcon\">' + chg_emoji(htmlEncode(message)) + '</div></li>');
             }
             else {
                 $('.discussion').append('<li class=\"leftmsg\"><strong>' + htmlEncode(name)
-    + '</strong>: ' + (new Date()).format("yyyy-MM-dd hh:mm:ss") + ' ▼<div class=\"leftcon\">' + chg_emoji(htmlEncode(message)) + '</div></li>');
+    + '</strong>: ' + sendtime + ' ▼<div class=\"leftcon\">' + chg_emoji(htmlEncode(message)) + '</div></li>');
             }
         };
 
         // 添加私信消息
-        chat.client.addNewMessageToPerPage = function (conn, name, message) {
+        chat.client.addNewMessageToPerPage = function (conn, name, message, toname, sendtime) {
             var priul = $(".private[data-connid = '" + conn + "']");
             if (priul.length <= 0) {
+            // 追加私信聊天窗口
                 var allul = $('.private').length + 1;
                 var elePosition = "top:" + allul*10+"px;left:" + allul*10+"px;";
                 $('#contentmsg').append('<div class="container" style="' + elePosition + '" data-connid="' + conn + '"><ul class="private" data-connid="' + conn + '"></ul></div>');
+                $(".container[data-connid = '" + conn + "']").prepend("<div style='height:25px;background-color:blue;color:red;'>与" + toname + "的聊天窗口<input type='button' value='关闭' style='float:right;' onclick='CloseThisDlg(\"" + conn + "\")'/><input type='button' value='清除' style='float:right;' onclick='ChearAllMsg(\"" + conn + "\")'/></div>");
+
                 priul = $(".private[data-connid = '" + conn + "']");
                 RefreshShow();
             }
 
-            if (name == "我") {
-                priul.append('<li class=\"rightmsg\"><strong>我</strong>: ' + (new Date()).format("yyyy-MM-dd hh:mm:ss") + ' ▼<div class=\"rightcon\">' + chg_emoji(htmlEncode(message)) + '</div></li>');
+            if (name == $.cookie("user_nickname")) {
+                priul.append('<li class=\"rightmsg\"><strong>' + htmlEncode(name)
+    + '</strong>: ' + sendtime + ' ▼<div class=\"rightcon\">' + chg_emoji(htmlEncode(message)) + '</div></li>');
             }
             else {
                 priul.append('<li class=\"leftmsg\"><strong>' + htmlEncode(name)
-    + '</strong>: ' + (new Date()).format("yyyy-MM-dd hh:mm:ss") + ' ▼<div class=\"leftcon\">' + chg_emoji(htmlEncode(message)) + '</div></li>');
+    + '</strong>: ' + sendtime + ' ▼<div class=\"leftcon\">' + chg_emoji(htmlEncode(message)) + '</div></li>');
             }
         };
 
-        // 用户登录
+        // 用户登录时加载聊天对象列表
         chat.client.CurUserList = function (UserList) {
             // 解析Json
             var data = eval("(" + UserList + ")");
-            var html = "<dl onclick=\"javascript:sendPerMessage('','')\" class=\"toAll\" data-connid=''><dd style=\"color:red;\">所有人</dd></dl>";
+            var html = "<dl onclick=\"javascript:setMessageObj('','')\" class=\"toAll\" data-connid=''><dd style=\"color:red;\">所有人</dd></dl>";
             for (var i = 0; i < data.length; i++) {
-                //这里我们做了一个判断 就是 解析用户列表Json时 如果用户的ID 就是当前用户的ID 那么就不添加 这跟QQ不一样啊 QQ中好友列表中是有自己的
+                // 生成聊天对象列表
                 if (data[i].UserId != $("#inp_userid").val()) {
-                    html += "<dl onclick=\"javascript:sendPerMessage('" + data[i].ConnectionId + "','" + data[i].UserNickName + "')\" class=\"toOne\"  data-connid='" + data[i].ConnectionId + "'><dd>" + data[i].UserNickName + "</dd></dl>";
+                    html += "<dl onclick=\"javascript:setMessageObj('" + data[i].ConnectionId + "','" + data[i].UserNickName + "')\" class=\"toOne\"  data-connid='" + data[i].ConnectionId + "'><dd>" + data[i].UserNickName + "</dd></dl>";
                 }
             }
             //更新页面用户列表
@@ -506,10 +663,14 @@
             // 调用hub的登录方法.
             chat.server.register($('#inp_userid').val(), $('#inp_nickname').val());
 
+            // 调用hub的历史消息方法.
+            chat.server.loadhistory();
+
+            // 点击发送消息
             $('#sendmessage').click(function () {
                 if ($('#message').val().length > 0) {
-                   var conn = $("#to_userconn").val();
-                   var nick = $("#to_usernick").val();
+                   var conn = $("#to_userconn").val(); // 接收者连接号
+                   var nick = $("#to_usernick").val(); // 接收者昵称
                    if (conn.length < 1) {
                         // 调用hub的送信方法.
                         chat.server.sendToAll($('#inp_nickname').val(), $('#message').val());
@@ -532,13 +693,14 @@
         return encodedValue;
     };
 
-    function sendPerMessage(conn,nick) {
+    // 切换聊天对象
+    function setMessageObj(conn,nick) {
         $("#to_userconn").val(conn);
         $("#to_usernick").val(nick);
-
+        // 更新用户列表及聊天窗口的选中状态
         RefreshShow();
     };
-
+    // 更新用户列表及聊天窗口的选中状态
     function RefreshShow() {
         var curconnid = $("#to_userconn").val();
         $("#OnlineUsers dl").removeClass("bd1");
@@ -547,4 +709,117 @@
         $(".container").css("z-index", "1");
         $(".container[data-connid='" + curconnid + "']").css("z-index", "5");
     };
+
+    // 清除历史消息
+    function ChearAllMsg(conn) {
+        if (conn) {
+            $(".private[data-connid = '" + conn + "']").html("");
+        }
+        else {
+            $(".discussion[data-connid = '" + conn + "']").html("");
+        }
+    };
+
+    // 关闭当前窗口
+    function CloseThisDlg(conn) {
+        if (conn) {
+            $(".container[data-connid = '" + conn + "']").remove();
+        }
+    };
+
+    // 显示编辑组弹窗
+    function showcreatgroup() {
+        layer.open({
+            type: 1,
+            title: '编辑组员',
+            btn: ['确定', '取消'],
+            btnAlign: 'c',
+            area: ['600px', '360px'],
+            content: $('#popEditGroup'),
+        });
+    }
+    $(function () {
+        $("body").on('click', '.name-list ul li', function (event) {
+            $(this).parent("ul").children("li").removeClass('active');
+            $(this).addClass('active');
+            $("#TeachSelect").css("display", "none");
+            $("#classMsg").html("");
+        });
+
+        $("body").on('click', '.choose-list .btn-right:visible', function (event) {
+            var left = $(this).closest('.choose-list').find('.choose-list-l');
+            var right = $(this).closest('.choose-list').find('.choose-list-r');
+            var li = left.find('li.active');
+            var exist = false;
+            $.each(right.find("ul").find("li"), function (key, value) {
+                if ($(value).val() == li.val()) {
+                    exist = true;
+                }
+            });
+            if (!exist) {
+                if (li.length == 1) {
+                    li.remove();
+                    right.find('ul').prepend('<li value=' + li.val() + ' class="tableEllipsis" title=' + li.text() + '>' + li.html() + '</li>')
+                } else {
+                    alert("Please choose one.")
+                }
+                $("#TeachSelect").css("display", "none");
+                $("#classMsg").html("");
+            }
+        });
+        //双击
+        $("body").on('dblclick', '.choose-list', function (event) {
+            var left = $(this).closest('.choose-list').find('.choose-list-l');
+            var right = $(this).closest('.choose-list').find('.choose-list-r');
+            var li = left.find('li.active');
+            if (li.length == 1) {
+                $(".btn-right").click();
+            } else {
+            }
+            $("#TeachSelect").css("display", "none");
+            $("#classMsg").html("");
+        });
+
+        $("body").on('click', '.choose-list .btn-left:visible', function (event) {
+            var left = $(this).closest('.choose-list').find('.choose-list-l');
+            var right = $(this).closest('.choose-list').find('.choose-list-r');
+            var li = right.find('li.active');
+            if (li.length == 1) {
+                li.remove();
+                left.find('ul').prepend('<li value=' + li.val() + ' class="tableEllipsis "  title=' + li.text() + '>' + li.html() + '</li>')
+            } else {
+                alert("Please choose one.")
+            }
+            $("#TeachSelect").css("display", "none");
+            $("#classMsg").html("");
+        });
+        //双击
+        $("body").on('dblclick', '.choose-list', function (event) {
+            var left = $(this).closest('.choose-list').find('.choose-list-l');
+            var right = $(this).closest('.choose-list').find('.choose-list-r');
+            var li = right.find('li.active');
+            if (li.length == 1) {
+                $(".btn-left").click();
+            } else {
+            }
+            $("#TeachSelect").css("display", "none");
+            $("#classMsg").html("");
+        });
+        $("body").on('click', '.choose-list .btn-right2', function (event) {
+            var left = $(this).closest(".choose-list").find(".choose-list-l").find("ul");
+            var right = $(this).closest(".choose-list").find(".choose-list-r").find("ul");
+            right.append(left.html());
+            left.html('');
+            $("#TeachSelect").css("display", "none");
+            $("#classMsg").html("");
+        });
+        $("body").on('click', '.choose-list .btn-left2', function (event) {
+            var left = $(this).closest(".choose-list").find(".choose-list-l").find("ul");
+            var right = $(this).closest(".choose-list").find(".choose-list-r").find("ul");
+            left.append(right.html());
+            right.html('');
+            $("#TeachSelect").css("display", "none");
+            $("#classMsg").html("");
+        });
+    });
 </script>
