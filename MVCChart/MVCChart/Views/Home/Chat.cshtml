@@ -40,20 +40,46 @@
             background-color: lightgray;
         }
 
-        #OnlineUsers dl {
+        #OnlineUsers ul{
+            padding:0;
+            list-style:none;
+        } 
+        #OnlineUsers li {
             cursor: pointer;
-            background-color: lightblue;
             margin: 2px;
-            height: 30px;
+            background-color: blue;
+            color: red;
+            /*height: 30px;*/
             line-height: 30px;
         }
-
-        #OnlineUsers .toAll {
-            background-color: blue;
+            #OnlineUsers li span {
+                padding: 0 15px;
+                width: 90%;
+                height: 100%;
+                display: inline-block;
+                color:white;
+            }
+                #OnlineUsers li span.curchat {
+                    color: red;
+                }
+        #OnlineUsers li dl{
+            display:none;
+            margin:0;
         }
+            #OnlineUsers li dt {
+                background-color: lightblue;
+                padding:0 20px;
+                color:black;
+            }
+                #OnlineUsers li dt.curchat {
+                    color: red;
+                }
 
-        .bd1 {
-            border:1px solid red;
+            #OnlineUsers li dt:hover {
+                color:red;
+            }
+        #OnlineUsers dt {
+            height: 30px;
         }
 
         .container {
@@ -63,12 +89,19 @@
             width: 500px;
             position: absolute;
             background-color: lightblue;
+            
         }
 
-         /*创建组弹窗样式*/
-        .fl {
-            float: left;
-        }
+            .container ul {
+                float: left;
+                width: 90%;
+                height: 90%;
+                overflow-y: auto;
+            }
+            /*创建组弹窗样式*/
+            .fl {
+                float: left;
+            }
         .fr {
             float: right;
         }
@@ -449,22 +482,12 @@
             FName: ["美丽的", "帅气的", "善良的", "高大的", "傲娇的", "猥琐的", "富有的"],
             LName: ["青蛙", "花猫", "金鱼", "菊花", "领导", "苹果", "老师"]
         };
-        $(function () {
-            
-            $("#btn_getnick").click(function () {
-                fun_getnickname(!1)
-            });
-            $("#inp_nickname").change(function () {
-                $.trim($("#inp_nickname").val()) && ($.cookie("user_nickname", $.trim($("#inp_nickname").val()), {
-                    expires: 365
-                }));
-            });
-        });
 
         // 随机获取用户名
         function fun_getnickname(a) {
             if ($.cookie("user_id") && $.cookie("user_nickname") && a) {
                 $("#inp_nickname").val($.cookie("user_nickname"));
+                $("#inp_userid").val($.cookie("user_id"));
             }
             else {
                 var timestamp = Date.parse(new Date());
@@ -473,17 +496,18 @@
                 if (randomName) {
                     $.cookie("user_id") || $.cookie("user_id", timestamp, {
                         expires: 365
-                    }),
+                    });
                     $.cookie("user_nickname", randomName, {
                         expires: 365
-                    }),
+                    });
                     $("#inp_nickname").val(randomName);
+                    $("#inp_userid").val($.cookie("user_id"));
                 }
                 else {
                     alert("昵称获取失败！");
                 }
             }
-            $("#inp_userid").val($.cookie("user_id"));
+
         }
     </script>
 </head>
@@ -496,7 +520,8 @@
 
             <input id="inp_userid" type="hidden" value="" />
             <input id="inp_userconn" type="hidden" value="" />
-            <input id="to_userconn" type="hidden" value="" />
+            <input id="to_chatid" type="hidden" value="" />
+            <input id="to_chattype" type="hidden" value="" />
             <input id="to_usernick" type="hidden" value="" />
         </div>
         <div>
@@ -523,24 +548,56 @@
                     <img height="20" width="20" src="http://www.blue-zero.com/Chat/IMG/record.png">
                 </a>
                 <input type="button" id="sendmessage" value="发送" style="height:25px;" />
-                <input type="button" value="建组" style="height:25px;" onclick="showcreatgroup()"/>
+                <input type="button" value="建组" style="height:25px;" class="showcreatgroup" data-groupid="" data-groupname="" />
             </div>
         </div>
         <div id="OnlineUsers">
-
+            <ul class="nav">
+                <li onclick="javascript:setMessageObj('','',0)" data-chatid=''>
+                    <span class ="userli_0">所有人</spanclass>
+                </li>
+                <li>
+                    <span class="userli_1">在线用户</span>
+                    <dl class="onlineuser">
+                        <dt>aa</dt>
+                        <dt>bb</dt>
+                    </dl>
+                </li>
+                <li>
+                    <span class="userli_2">所在群组</span>
+                    <dl class="ingroups">
+                        <dt>aa</dt>
+                        <dt>bb</dt>
+                    </dl>
+                </li>
+            </ul>
         </div>
+        <script>
+            $(document).ready(function () {
+            //二级导航下拉
+                $(".nav li span").each(function () {
+                $(this).click(function () {
+                    $(this).addClass("on");
+                    $(this).next("dl").stop(false, true).slideToggle(200);
+                });
+            });
+            });
+        </script>
     </div>
     <div id="contentmsg" style ="position: absolute; width: 500px; height: 500px;margin:10px 0 0 500px;">
-        <div class="container" style="top:0px;left:0px;" data-connid=''>
+        <div class="container" style="top:0px;left:0px;" data-chatid=''>
             <div style="height:25px;background-color:blue;color:red;">
             公共聊天窗口
             <input type="button" value="清除" style="float:right;" onclick="ChearAllMsg('')"/>
             </div>
-            <ul class="discussion" data-connid=''></ul>
+            <ul class="discussion" data-chatid=''></ul>
         </div>
     </div>
 
 <div class="popup" id="popEditGroup" style="display:none;">
+    <div style="margin:10px auto;text-align:center;">
+       组名:<input id="editgroupname" type="text" value="" />
+    </div>
         <div class="choose">
             <div class="name-list name-list-1 choose-list">
                 <div class="name-list-l name-list-l-1 choose-list-l fl">
@@ -549,8 +606,8 @@
                         <input type="text" maxlength="30"><i onclick="searchLU()"></i>
                     </div>*@
                     <ul id="addUnSelClass">
-                        <li class="tableEllipsis" value="1" title="aa">aa</li>
-                        <li class="tableEllipsis" value="2" title="bb">bb</li>
+                        @*<li class="tableEllipsis" value="1" title="aa">aa</li>
+                        <li class="tableEllipsis" value="2" title="bb">bb</li>*@
                     </ul>
                 </div>
                 <div class="name-btn">
@@ -567,123 +624,308 @@
                 <div class="clear"></div>
             </div>
         </div>
-    </div>
+</div>
 
 </body>
 </html>
 
 
 <script type='text/javascript'>
-    Date.prototype.format = function (format) {
-        var o = {
-            "M+": this.getMonth() + 1, //month
-            "d+": this.getDate(), //day
-            "h+": this.getHours(), //hour
-            "m+": this.getMinutes(), //minute
-            "s+": this.getSeconds(), //second
-            "q+": Math.floor((this.getMonth() + 3) / 3), //quarter
-            "S": this.getMilliseconds() //millisecond
-        }
+    //Date.prototype.format = function (format) {
+    //    var o = {
+    //        "M+": this.getMonth() + 1, //month
+    //        "d+": this.getDate(), //day
+    //        "h+": this.getHours(), //hour
+    //        "m+": this.getMinutes(), //minute
+    //        "s+": this.getSeconds(), //second
+    //        "q+": Math.floor((this.getMonth() + 3) / 3), //quarter
+    //        "S": this.getMilliseconds() //millisecond
+    //    }
 
-        if (/(y+)/.test(format)) {
-            format = format.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
-        }
+    //    if (/(y+)/.test(format)) {
+    //        format = format.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+    //    }
 
-        for (var k in o) {
-            if (new RegExp("(" + k + ")").test(format)) {
-                format = format.replace(RegExp.$1, RegExp.$1.length == 1 ? o[k] : ("00" + o[k]).substr(("" + o[k]).length));
-            }
-        }
-        return format;
-    }
+    //    for (var k in o) {
+    //        if (new RegExp("(" + k + ")").test(format)) {
+    //            format = format.replace(RegExp.$1, RegExp.$1.length == 1 ? o[k] : ("00" + o[k]).substr(("" + o[k]).length));
+    //        }
+    //    }
+    //    return format;
+    //}
 
     $(function () {
         var chat = $.connection.chatHub;
-        // 添加消息
-        chat.client.addNewMessageToPage = function (name, message, sendtime) {
-            if (name == $.cookie("user_nickname")) {
-                $('.discussion').append('<li class=\"rightmsg\"><strong>' + htmlEncode(name)
+        // 添加公共消息
+        chat.client.addAllMessageToPage = function (sendid,sendname, message, sendtime) {
+
+            // 自己消息在右；他人消息在左
+            if (sendid == $.cookie("user_id")) {
+                $('.discussion').append('<li class=\"rightmsg\"><strong>' + htmlEncode(sendname)
     + '</strong>: ' + sendtime + ' ▼<div class=\"rightcon\">' + chg_emoji(htmlEncode(message)) + '</div></li>');
             }
             else {
-                $('.discussion').append('<li class=\"leftmsg\"><strong>' + htmlEncode(name)
+                $('.discussion').append('<li class=\"leftmsg\"><strong>' + htmlEncode(sendname)
     + '</strong>: ' + sendtime + ' ▼<div class=\"leftcon\">' + chg_emoji(htmlEncode(message)) + '</div></li>');
             }
         };
 
         // 添加私信消息
-        chat.client.addNewMessageToPerPage = function (conn, name, message, toname, sendtime) {
-            var priul = $(".private[data-connid = '" + conn + "']");
+        chat.client.addPerMessageToPage = function (chatid, chatname, sendid, sendname, message, sendtime) {
+            var priul = $(".private[data-chatid = '" + chatid + "']");
             if (priul.length <= 0) {
             // 追加私信聊天窗口
                 var allul = $('.private').length + 1;
-                var elePosition = "top:" + allul*10+"px;left:" + allul*10+"px;";
-                $('#contentmsg').append('<div class="container" style="' + elePosition + '" data-connid="' + conn + '"><ul class="private" data-connid="' + conn + '"></ul></div>');
-                $(".container[data-connid = '" + conn + "']").prepend("<div style='height:25px;background-color:blue;color:red;'>与" + toname + "的聊天窗口<input type='button' value='关闭' style='float:right;' onclick='CloseThisDlg(\"" + conn + "\")'/><input type='button' value='清除' style='float:right;' onclick='ChearAllMsg(\"" + conn + "\")'/></div>");
+                var elePosition = "top:" + allul * 10 + "px;left:" + allul * 10 + "px;";
+                var dialoghtml = "";
+                dialoghtml += "<div class='chatname' style='height:25px;background-color:blue;color:red;' >";
+                dialoghtml += "<span class='showname'>私：" + chatname + "</span>";
+                dialoghtml += "<input type='button' value='关闭' style='float:right;' onclick='CloseThisDlg(\"" + chatid + "\")'/>";
+                dialoghtml += "<input type='button' value='清除' style='float:right;' onclick='ChearAllMsg(\"" + chatid + "\")'/></div>"
+                $('#contentmsg').append('<div class="container" style="' + elePosition + '" data-chatid="' + chatid + '"><ul class="private" data-chatid="' + chatid + '"></ul></div>');
+                $(".container[data-chatid = '" + chatid + "']").prepend(dialoghtml);
+                //$(".container[data-chatid = '" + chatid + "']").prepend("<div style='height:25px;background-color:blue;color:red;'>与" + chatname + "的聊天窗口<input type='button' value='关闭' style='float:right;' onclick='CloseThisDlg(\"" + chatid + "\")'/><input type='button' value='清除' style='float:right;' onclick='ChearAllMsg(\"" + chatid + "\")'/></div>");
 
-                priul = $(".private[data-connid = '" + conn + "']");
+                priul = $(".private[data-chatid = '" + chatid + "']");
                 RefreshShow();
             }
-
-            if (name == $.cookie("user_nickname")) {
-                priul.append('<li class=\"rightmsg\"><strong>' + htmlEncode(name)
+            else {
+                // 更新窗口名
+                $(".container[data-chatid = '" + chatid + "'] .showname").text("私：" + chatname);
+            }
+            // 自己消息在右；他人消息在左
+            if (sendid == $.cookie("user_id")) {
+                priul.append('<li class=\"rightmsg\"><strong>' + htmlEncode(sendname)
     + '</strong>: ' + sendtime + ' ▼<div class=\"rightcon\">' + chg_emoji(htmlEncode(message)) + '</div></li>');
             }
             else {
-                priul.append('<li class=\"leftmsg\"><strong>' + htmlEncode(name)
+                priul.append('<li class=\"leftmsg\"><strong>' + htmlEncode(sendname)
     + '</strong>: ' + sendtime + ' ▼<div class=\"leftcon\">' + chg_emoji(htmlEncode(message)) + '</div></li>');
             }
         };
 
-        // 用户登录时加载聊天对象列表
+        // 添加群组消息（对话框标识，对话框名称，发送者标识，发送者昵称，消息，发送时间）
+        chat.client.addGroupMessageToPage = function (chatid, chatname, sendid, sendname, message, sendtime) {
+            var priul = $(".private[data-chatid = '" + chatid + "']");
+            if (priul.length <= 0) {
+                // 追加群组聊天窗口
+                var allul = $('.private').length + 1;
+                var elePosition = "top:" + allul * 10 + "px;left:" + allul * 10 + "px;";
+                var dialoghtml = "";
+                dialoghtml += "<div class='chatname' style='height:25px;background-color:blue;color:red;' >";
+                dialoghtml += "<span class='showname'>组：" + chatname + "</span>";
+                dialoghtml += "<input type='button' value='关闭' style='float:right;' onclick='CloseThisDlg(\"" + chatid + "\")'/>";
+                dialoghtml += "<input type='button' value='清除' style='float:right;' onclick='ChearAllMsg(\"" + chatid + "\")'/>"
+                dialoghtml += "<input type='button' value='修改' style='float:right;' class='showcreatgroup' data-groupid='" + chatid + "' data-groupname='" + chatname + "' /></div>"
+                $('#contentmsg').append('<div class="container" style="' + elePosition + '" data-chatid="' + chatid + '"><ul class="private" data-chatid="' + chatid + '"></ul></div>');
+                $(".container[data-chatid = '" + chatid + "']").prepend(dialoghtml);
+                priul = $(".private[data-chatid = '" + chatid + "']");
+                RefreshShow();
+            }
+            else {
+                // 更新组名
+                $(".container[data-chatid = '" + chatid + "'] .showname").text("组：" + chatname);
+                $(".container[data-chatid = '" + chatid + "'] .showcreatgroup").attr("data-groupname", chatname);
+            }
+
+            // 自己消息在右；他人消息在左
+            if (sendid == $.cookie("user_id")) {
+                priul.append('<li class=\"rightmsg\"><strong>' + htmlEncode(sendname)
+    + '</strong>: ' + sendtime + ' ▼<div class=\"rightcon\">' + chg_emoji(htmlEncode(message)) + '</div></li>');
+            }
+            else {
+                priul.append('<li class=\"leftmsg\"><strong>' + htmlEncode(sendname)
+    + '</strong>: ' + sendtime + ' ▼<div class=\"leftcon\">' + chg_emoji(htmlEncode(message)) + '</div></li>');
+            }
+        };
+
+        // 加载在线用户列表
         chat.client.CurUserList = function (UserList) {
             // 解析Json
-            var data = eval("(" + UserList + ")");
-            var html = "<dl onclick=\"javascript:setMessageObj('','')\" class=\"toAll\" data-connid=''><dd style=\"color:red;\">所有人</dd></dl>";
-            for (var i = 0; i < data.length; i++) {
+            var userdata = eval("(" + UserList + ")");
+
+            // 拼接当前用户
+            var html = "";
+            for (var i = 0; i < userdata.length; i++) {
                 // 生成聊天对象列表
-                if (data[i].UserId != $("#inp_userid").val()) {
-                    html += "<dl onclick=\"javascript:setMessageObj('" + data[i].ConnectionId + "','" + data[i].UserNickName + "')\" class=\"toOne\"  data-connid='" + data[i].ConnectionId + "'><dd>" + data[i].UserNickName + "</dd></dl>";
+                if (userdata[i].UserId != $("#inp_userid").val()) {
+                    html += "<dt onclick=\"javascript:setMessageObj('" + userdata[i].UserId + "','" + userdata[i].UserNickName + "',1)\" data-chatid='" + userdata[i].UserId + "'>" + userdata[i].UserNickName + "</dt>";
                 }
             }
             //更新页面用户列表
-            $("#OnlineUsers").html(html);
-            var curconnid = $("#to_userconn").val();
-            $("#OnlineUsers dl[data-connid='" + curconnid + "']").addClass("bd1");
+            $(".onlineuser").html(html);
+            var tochatid = $("#to_chatid").val();
+            $(".onlineuser dt[data-chatid='" + tochatid + "']").addClass("curchat");
         };
 
-        //$('#displayname').val(prompt('Enter your name:', ''));
+        // 加载所在群组列表
+        chat.client.CurUserGroup = function (GroupList) {
+            // 解析Json
+            var groupdata = eval("(" + GroupList + ")");
+
+            // 拼接当前组
+            var html = "";
+            for (var i = 0; i < groupdata.length; i++) {
+                // 生成组列表
+                html += "<dt onclick=\"javascript:setMessageObj('" + groupdata[i].GroupId + "','" + groupdata[i].GroupName + "',2)\" data-chatid='" + groupdata[i].GroupId + "'>" + groupdata[i].GroupName + "</dt>";
+            }
+            //更新页面用户列表
+            $(".ingroups").html(html);
+            var tochatid = $("#to_chatid").val();
+            $(".ingroups dt[data-chatid='" + tochatid + "']").addClass("curchat");
+        };
+
+        // 更新群组列表
+        chat.client.UpdateUserGroup = function (GroupList) {
+            // 解析Json
+            var groupdata = eval("(" + GroupList + ")");
+
+            // 拼接当前组
+            var html = "";
+                // 生成组列表
+            html += "<dt onclick=\"javascript:setMessageObj('" + groupdata.GroupId + "','" + groupdata.GroupName + "',2)\" data-chatid='" + groupdata.GroupId + "'>" + groupdata.GroupName + "</dt>";
+            //更新页面用户列表
+            $(".ingroups dt[data-chatid='" + groupdata.GroupId + "']").remove();
+            $(".ingroups").prepend(html);
+            var tochatid = $("#to_chatid").val();
+            $(".ingroups dt[data-chatid='" + tochatid + "']").addClass("curchat");
+        };
+
+        // 用户编辑组时设置已选成员
+        chat.client.setCurGroupItems = function (UserList, groupitems) {
+            // 解析Json
+            var userdata = eval("(" + UserList + ")");
+            var arrItems = groupitems.split(',');
+
+            // 更新设置组员弹窗的组员列表
+            var lefthtml = "";
+            var righthtml = "";
+            for (var i = 0; i < userdata.length; i++) {
+                // 生成聊天对象列表
+                if (userdata[i].UserId != $("#inp_userid").val()) {
+                    if ($.inArray(userdata[i].UserId,arrItems)>0) {
+                        righthtml += "<li value='" + userdata[i].UserId + "' class='tableEllipsis' title='" + userdata[i].UserNickName + "'>" + userdata[i].UserNickName + "</li>";
+                    }
+                    else {
+                        lefthtml += "<li value='" + userdata[i].UserId + "' class='tableEllipsis' title='" + userdata[i].UserNickName + "'>" + userdata[i].UserNickName + "</li>";
+                    }
+                    
+                }
+            }
+            $("#addUnSelClass").html(lefthtml);
+            $("#addSelClass").html(righthtml);
+        };
+
+        $("#btn_getnick").click(function () {
+            fun_getnickname(!1)
+            // 调用hub的改名方法.
+            chat.server.resetName($('#inp_nickname').val());
+        });
+        $("#inp_nickname").change(function () {
+            $.trim($("#inp_nickname").val()) && ($.cookie("user_nickname", $.trim($("#inp_nickname").val()), {
+                expires: 365
+            }));
+            // 调用hub的改名方法.
+            chat.server.resetName($('#inp_nickname').val());
+        });
+        
         // 为消息输入框设置初始焦点。
         $('#message').focus();
         // 启动连接
         $.connection.hub.start().done(function () {
-
             // 获取昵称和标识
             fun_getnickname(!0);
             // 调用hub的登录方法.
             chat.server.register($('#inp_userid').val(), $('#inp_nickname').val());
 
-            // 调用hub的历史消息方法.
-            chat.server.loadhistory();
-
             // 点击发送消息
             $('#sendmessage').click(function () {
                 if ($('#message').val().length > 0) {
-                   var conn = $("#to_userconn").val(); // 接收者连接号
-                   var nick = $("#to_usernick").val(); // 接收者昵称
-                   if (conn.length < 1) {
-                        // 调用hub的送信方法.
-                        chat.server.sendToAll($('#inp_nickname').val(), $('#message').val());
+                    var to_chatid = $("#to_chatid").val(); // 接收者连接号
+                    var to_chattype = $("#to_chattype").val(); // 消息类型
+                    //var inp_userid = $("#inp_userid").val(); // 接收者昵称
+                    if (to_chattype == 1) {
+                        // 调用hub的私聊方法.
+                        chat.server.sendSingle(to_chatid, $('#message').val());
+                    }
+                    else if (to_chattype == 2) {
+                        // 调用hub的组聊方法.
+                        chat.server.sendGroup(to_chatid, $('#message').val());
                     }
                     else {
-                       // 调用hub的送信方法.
-                       chat.server.sendSingle(conn, nick, $('#inp_nickname').val(), $('#message').val());
+                        // 调用hub的群发方法.
+                        chat.server.sendToAll($('#message').val());
                     }
-
-
                     // 清空内容，重置焦点
                     $('#message').val('').focus();
                 }
+            });
+        });
+
+        $("body").on('click', '.showcreatgroup', function (event) {
+            var groupid = $(this).attr("data-groupid");
+            var groupname = $(this).attr("data-groupname");
+            $("#editgroupname").val(groupname);
+
+            // 调用hub的查询组员方法.
+            chat.server.getCurGroupItems(groupid);
+
+            layer.open({
+                type: 1,
+                title: '编辑组员',
+                btn: ['确定', '取消'],
+                btnAlign: 'c',
+                area: ['600px', '400px'],
+                content: $('#popEditGroup'),
+                yes: function (index) {
+                    var rightli = $('.choose-list-r li');
+                    var groupitems = $.trim($("#inp_userid").val());
+                    if (rightli.length > 0) {
+                        $.each(rightli, function (key, value) {
+                            groupitems += "," + $.trim($(value).attr('value'));
+                        });
+                    }
+                    // 调用hub的建组方法.
+                    chat.server.setGroup(groupid, groupitems, $("#editgroupname").val());
+                    layer.close(index);
+                },
+                cancel: function (index) {
+                    //alert("fou");
+                },
+            });
+        });
+
+        // 显示编辑组弹窗
+        $(".showcreatgroup1").click(function () {
+            var groupid = $(this).attr("data-groupid");
+            var groupname = $(this).attr("data-groupname");
+            $("#editgroupname").val(groupname);
+
+            // 调用hub的查询组员方法.
+            chat.server.getCurGroupItems(groupid);
+
+            layer.open({
+                type: 1,
+                title: '编辑组员',
+                btn: ['确定', '取消'],
+                btnAlign: 'c',
+                area: ['650px', '360px'],
+                content: $('#popEditGroup'),
+                yes: function (index) {
+                    var rightli = $('.choose-list-r li');
+                    var groupitems = $.trim($("#inp_userid").val());
+                    if (rightli.length > 0) {
+                        $.each(rightli, function (key, value) {
+                            groupitems += "," + $.trim($(value).attr('value'));
+                        });
+                    }
+                    // 调用hub的建组方法.
+                    chat.server.setGroup(groupid, groupitems, $("#editgroupname").val());
+                    layer.close(index);
+                },
+                cancel: function (index) {
+                    //alert("fou");
+                },
             });
         });
     });
@@ -694,50 +936,49 @@
     };
 
     // 切换聊天对象
-    function setMessageObj(conn,nick) {
-        $("#to_userconn").val(conn);
+    function setMessageObj(chatid, nick, type) {
+        $("#to_chatid").val(chatid);
         $("#to_usernick").val(nick);
+        $("#to_chattype").val(type); // 0:群发，1：私聊，2：组聊
+
         // 更新用户列表及聊天窗口的选中状态
         RefreshShow();
     };
+
     // 更新用户列表及聊天窗口的选中状态
     function RefreshShow() {
-        var curconnid = $("#to_userconn").val();
-        $("#OnlineUsers dl").removeClass("bd1");
-        $("#OnlineUsers dl[data-connid='" + curconnid + "']").addClass("bd1");
+        var curchatid = $("#to_chatid").val();
+        var curchattype = $("#to_chattype").val();
 
+        $("#OnlineUsers li span").removeClass("curchat");
+        $("#OnlineUsers li dt").removeClass("curchat");
+
+        $("#OnlineUsers .userli_" + curchattype).addClass("curchat");
+        $("#OnlineUsers dt[data-chatid='" + curchatid + "']").addClass("curchat");
+
+        // 聊天窗口前置
         $(".container").css("z-index", "1");
-        $(".container[data-connid='" + curconnid + "']").css("z-index", "5");
+        $(".container[data-chatid='" + curchatid + "']").css("z-index", "5");
     };
 
     // 清除历史消息
-    function ChearAllMsg(conn) {
-        if (conn) {
-            $(".private[data-connid = '" + conn + "']").html("");
+    function ChearAllMsg(chatid) {
+        if (chatid) {
+            $(".private[data-chatid = '" + chatid + "']").html("");
         }
         else {
-            $(".discussion[data-connid = '" + conn + "']").html("");
+            $(".discussion[data-chatid = '" + chatid + "']").html("");
         }
     };
 
     // 关闭当前窗口
-    function CloseThisDlg(conn) {
-        if (conn) {
-            $(".container[data-connid = '" + conn + "']").remove();
+    function CloseThisDlg(chatid) {
+        if (chatid) {
+            $(".container[data-chatid = '" + chatid + "']").remove();
         }
     };
 
-    // 显示编辑组弹窗
-    function showcreatgroup() {
-        layer.open({
-            type: 1,
-            title: '编辑组员',
-            btn: ['确定', '取消'],
-            btnAlign: 'c',
-            area: ['600px', '360px'],
-            content: $('#popEditGroup'),
-        });
-    }
+    // 组用户设置界面
     $(function () {
         $("body").on('click', '.name-list ul li', function (event) {
             $(this).parent("ul").children("li").removeClass('active');
@@ -752,14 +993,14 @@
             var li = left.find('li.active');
             var exist = false;
             $.each(right.find("ul").find("li"), function (key, value) {
-                if ($(value).val() == li.val()) {
+                if ($(value).attr('value') == li.attr('value')) {
                     exist = true;
                 }
             });
             if (!exist) {
                 if (li.length == 1) {
                     li.remove();
-                    right.find('ul').prepend('<li value=' + li.val() + ' class="tableEllipsis" title=' + li.text() + '>' + li.html() + '</li>')
+                    right.find('ul').prepend('<li value=' + li.attr('value') + ' class="tableEllipsis" title=' + li.text() + '>' + li.html() + '</li>')
                 } else {
                     alert("Please choose one.")
                 }
@@ -786,7 +1027,7 @@
             var li = right.find('li.active');
             if (li.length == 1) {
                 li.remove();
-                left.find('ul').prepend('<li value=' + li.val() + ' class="tableEllipsis "  title=' + li.text() + '>' + li.html() + '</li>')
+                left.find('ul').prepend('<li value=' + li.attr('value') + ' class="tableEllipsis "  title=' + li.text() + '>' + li.html() + '</li>')
             } else {
                 alert("Please choose one.")
             }
